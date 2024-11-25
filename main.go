@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"previewphase1/helper"
 	"sync"
 	"time"
 )
@@ -10,14 +11,14 @@ import (
 func main() {
 	// firstTask()
 	// secondTask()
-	// thirdTask()
+	thirdTask()
 	// fourthTask()
-	fifthTask()
+	// fifthTask()
 }
 
 func firstTask() {
-	go printNumbers()
-	go printLetters()
+	go helper.PrintNumbers()
+	go helper.PrintLetters()
 
 	time.Sleep(3 * time.Second)
 }
@@ -30,7 +31,7 @@ func secondTask() {
 
 		go func() {
 			defer wg.Done()
-			printNumbers()
+			helper.PrintNumbers()
 		}()
 
 		wg.Wait()
@@ -39,7 +40,7 @@ func secondTask() {
 
 		go func() {
 			defer wg.Done()
-			printLetters()
+			helper.PrintLetters()
 		}()
 
 		wg.Wait()
@@ -48,7 +49,7 @@ func secondTask() {
 
 		go func() {
 			defer wg.Done()
-			printLetters()
+			helper.PrintLetters()
 		}()
 
 		wg.Wait()
@@ -57,7 +58,7 @@ func secondTask() {
 
 		go func() {
 			defer wg.Done()
-			printNumbers()
+			helper.PrintNumbers()
 		}()
 
 		wg.Wait()
@@ -65,35 +66,21 @@ func secondTask() {
 }
 
 func thirdTask() {
-	c := make(chan int) // Unbuffered channel
+	ch := make(chan int) // Unbuffered channel
 
-	go func() {
-		for i := 1; i <= 10; i++ {
-			c <- i // This will block until the receiver reads from the channel
-		}
+	go helper.Produce(ch)
+	go helper.Consume(ch)
 
-		close(c)
-	}()
-
-	for row := range c { // Receiver will block until data is available
-		fmt.Println(row)
-	}
+	time.Sleep(300 * time.Millisecond)
 }
 
 func fourthTask() {
-	c := make(chan int, 5) // Buffered channel with a capacity of 5
+	ch := make(chan int, 5) // Buffered channel with a capacity of 5
 
-	go func() {
-		for i := 1; i <= 10; i++ {
-			c <- i // This will not block until the buffer is full
-		}
+	go helper.Produce(ch)
+	go helper.Consume(ch)
 
-		close(c)
-	}()
-
-	for row := range c { // Receiver will block if buffer is empty
-		fmt.Println(row)
-	}
+	time.Sleep(300 * time.Millisecond)
 }
 
 func fifthTask() {
@@ -104,7 +91,7 @@ func fifthTask() {
 	go func() {
 		for i := 1; i <= 25; i++ {
 			if i > 20 {
-				isErr <- fmt.Errorf("Number %d is greater than 20\n", i)
+				isErr <- fmt.Errorf("number %d is greater than 20", i)
 				continue
 			}
 
@@ -129,21 +116,5 @@ func fifthTask() {
 			fmt.Printf("Error: %s", isErr)
 		}
 
-	}
-}
-
-func printNumbers() {
-	for i := 1; i <= 10; i++ {
-		fmt.Println(i)
-		time.Sleep(time.Millisecond * time.Duration(rand.Intn(500)))
-	}
-}
-
-func printLetters() {
-	letters := []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"}
-
-	for _, row := range letters {
-		fmt.Println(row)
-		time.Sleep(time.Millisecond * time.Duration(rand.Intn(500)))
 	}
 }
